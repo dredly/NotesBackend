@@ -1,5 +1,20 @@
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+
 const express = require('express');
 const cors = require('cors');
+const Note = require('./models/note');
+const mongoose = require('mongoose');
+
+const mongoURI = process.env.MONGODB_URI;
+mongoose.connect(mongoURI)
+    .then(result => {
+        console.log('Connected to mongo');
+    })
+    .catch(err => {
+        console.log('Error connecting to mongo', err.message);
+    });
 
 const app = express();
 
@@ -40,7 +55,9 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/notes', (req, res) => {
-    res.json(notes);
+    Note.find({}).then(notes => {
+        res.json(notes);
+    })
 });
 
 app.post('/api/notes', (req, res) => {
@@ -86,7 +103,7 @@ const unknownEndpoint = (req, res) => {
 
 app.use(unknownEndpoint);
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
 });
