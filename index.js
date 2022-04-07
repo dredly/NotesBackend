@@ -6,6 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const Note = require('./models/note');
 const mongoose = require('mongoose');
+const { response } = require('express');
 
 const mongoURI = process.env.MONGODB_URI;
 mongoose.connect(mongoURI)
@@ -43,13 +44,6 @@ let notes = [
     }
 ];
 
-const generateID = () => {
-    const maxID = notes.length > 0
-        ? Math.max(...notes.map(n => n.id))
-        : 0;
-    return maxID + 1;
-}
-
 app.get('/', (req, res) => {
     res.send(`<h1>Hello World!</h1>`);
 });
@@ -69,24 +63,21 @@ app.post('/api/notes', (req, res) => {
         });
     }
 
-    const note = {
+    const note = new Note({
         content: body.content,
         important: body.important || false,
         date: new Date(),
-        id: generateID(),
-    }
-    notes = notes.concat(note);
-    res.json(note);
+    });
+    note.save().then(savedNote => {
+        res.json(savedNote);
+    });
 })
 
 app.get('/api/notes/:id', (req, res) => {
     const id = req.params.id;
-    const note = notes.find(n => n.id === parseInt(id));
-    if (note) {
-        res.json(note);
-    } else {
-        res.status(404).end();
-    }
+    Note.findById(id).then(foundNote => {
+        res.json(foundNote);
+    })
 });
 
 app.delete('/api/notes/:id', (req, res) => {
