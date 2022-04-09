@@ -33,23 +33,19 @@ app.get('/api/notes', (req, res) => {
     })
 });
 
-app.post('/api/notes', (req, res) => {
+app.post('/api/notes', (req, res, next) => {
     const body = req.body;
-
-    if (!body.content) {
-        return res.status(400).json({
-            error: 'Content missing'
-        });
-    }
 
     const note = new Note({
         content: body.content,
         important: body.important || false,
         date: new Date(),
     });
-    note.save().then(savedNote => {
-        res.json(savedNote);
-    });
+    note.save()
+        .then(savedNote => {
+            res.json(savedNote);
+        })
+        .catch(err => next(err));
 })
 
 app.get('/api/notes/:id', (req, res, next) => {
@@ -76,12 +72,10 @@ app.delete('/api/notes/:id', (req, res, next) => {
 
 app.put('/api/notes/:id', (req, res, next) => {
     const id = req.params.id;
-    const body = req.body;
-    const note = {
-        content: body.content,
-        important: body.important
-    }
-    Note.findByIdAndUpdate(id, note, { new: true })
+    const { content, important } = req.body;
+    Note.findByIdAndUpdate(id, { content, important }, {
+        new: true, runValidators: true, context: 'query'
+    })
         .then(updatedNote => res.json(updatedNote))
         .catch(err => next(err));
 })
@@ -99,6 +93,8 @@ const errorHandler = (err, req, res, next) => {
 
     if (err.name === 'CastError') {
         return res.status(400).send({ error: 'malformed object id' });
+    } else if (err.name === 'ValidationError') {
+        return res.status(400).send({ error: err.message });
     }
     next(err);
 }
