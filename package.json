@@ -10,7 +10,8 @@
     "build:ui": "shx rm -rf build && cd ../NotesFrontend/ && npm run build && cp -r build ../NotesBackend",
     "deploy": "git push heroku main",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push && npm run deploy",
-    "logs:prod": "heroku logs --tail"
+    "logs:prod": "heroku logs --tail",
+    "lint": "eslint --fix --ext .js,.jsx ."
   },
   "author": "",
   "license": "ISC",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "dotenv": "^16.0.0",
+    "eslint": "^8.13.0",
     "nodemon": "^2.0.15",
     "shx": "^0.3.4"
   }
