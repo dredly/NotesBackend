@@ -64,6 +64,21 @@ describe('viewing a specific note', () => {
 })
 
 describe('addition of a new note', () => {
+	let token = null
+	beforeEach(async () => {
+		await User.deleteMany({})
+		const passwordHash = await bcrypt.hash('miguel', 10)
+		const user = new User({ username: 'root', passwordHash })
+		await user.save()
+		// Get a token to simulate a user being logged in
+		const loginResponse = await api
+			.post('/api/login')
+			.send({
+				username: user.username,
+				password: 'miguel'
+			})
+		token = loginResponse.body.token
+	})
 	test('succeeds with valid data', async () => {
 		const newNote = {
 			content: 'async/await simplifies making async calls',
@@ -72,6 +87,7 @@ describe('addition of a new note', () => {
 
 		await api
 			.post('/api/notes')
+			.set('Authorization', `bearer ${token}`)
 			.send(newNote)
 			.expect(201)
 			.expect('Content-Type', /application\/json/)
@@ -89,6 +105,7 @@ describe('addition of a new note', () => {
 		}
 		await api
 			.post('/api/notes')
+			.set('Authorization', `bearer ${token}`)
 			.send(newNote)
 			.expect(400)
 
