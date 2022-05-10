@@ -12,6 +12,10 @@ const api = supertest(app)
 beforeEach(async () => {
 	await Note.deleteMany({})
 	await Note.insertMany(helper.initialNotes)
+	await User.deleteMany({})
+	const passwordHash = await bcrypt.hash('miguel', 10)
+	const user = new User({ username: 'root', passwordHash })
+	await user.save()
 })
 
 describe('when there are initially some notes saved', () => {
@@ -132,13 +136,6 @@ describe('deletion of a note', () => {
 })
 
 describe('when there is initially one user in the db', () => {
-	beforeEach(async () => {
-		await User.deleteMany({})
-		const passwordHash = await bcrypt.hash('miguel', 10)
-		const user = new User({ username: 'root', passwordHash })
-		await user.save()
-	})
-
 	test('creation succeeds with a fresh username', async () => {
 		const usersAtStart = await helper.usersInDb()
 		const newUser = {
