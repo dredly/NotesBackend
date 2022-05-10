@@ -14,7 +14,7 @@ beforeEach(async () => {
 	await Note.insertMany(helper.initialNotes)
 	await User.deleteMany({})
 	const passwordHash = await bcrypt.hash('miguel', 10)
-	const user = new User({ username: 'root', passwordHash })
+	const user = new User({ username: 'root', name: 'Root User', passwordHash })
 	await user.save()
 })
 
